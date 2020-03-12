@@ -5,6 +5,7 @@
 -- Date Last Modified:03/5/2020
 -- Modified by:Derek Dombek
 -- Modification log: --3/5/2020- added inserts to the disk database
+					--3/12/2020- added joins
 
 use master;
 go
@@ -297,4 +298,52 @@ from cd_borrower
 where return_date is null;
 
 
+--Project 4
+--3.
+select cd_name as 'CD name', convert(varchar(10),rel_date, 101) as 'Release Date', artist_firt_name as 'Artist First name', artist_last_name as 'Artist Last name' 
 
+from cd join cd_artist 
+	on cd.cd_id = cd_artist.cd_id join artist
+	on cd_artist.artist_id = artist.artist_id
+where artist_type_id = 1
+order by artist_last_name, artist_firt_name, cd_name;
+go
+--4.
+create view View_Individual_Artist as 
+	select artist_id, artist_firt_name, artist_last_name
+	from artist
+	where artist_type_id = 1;
+go
+select artist_firt_name as 'FirstName', artist_last_name as 'LastName'
+from View_Individual_Artist
+order by artist_firt_name, artist_last_name
+
+--5.
+select cd_name as 'CD name', convert(varchar(10),rel_date, 101) as 'Release Date', artist_firt_name as 'Group Name' 
+from cd join cd_artist 
+	on cd.cd_id = cd_artist.cd_id join artist
+	on cd_artist.artist_id = artist.artist_id
+where artist.artist_id not in (select artist_id from View_Individual_Artist)
+order by cd_name;
+
+--6.
+select borrower_firt_name as 'First', borrower_last_name as 'Last', cd_name as 'CD Name', borrower_date as 'Borrowed Date', return_date as 'Returned Date'
+from borrower b join cd_borrower cdb
+	on b.borrower_id = cdb.borrower_id join cd d
+	on cdb.cd_id = d.cd_id
+order by cd_name, borrower_last_name, borrower_firt_name, borrower_date, return_date;
+
+--7.
+select d.cd_id, cd_name, count(*) as 'Times Borrowed'
+from cd d join cd_borrower cdb
+	on d.cd_id = cdb.cd_id
+group by d.cd_id, cd_name
+order by d.cd_id;
+
+--8.
+select cd_name as 'CD Name', borrower_date as Borrowed, return_date as Returned, borrower_last_name as 'Last Name'
+from cd d join cd_borrower cdb
+	on d.cd_id = cdb.cd_id join borrower b
+	on cdb.borrower_id = b.borrower_id
+where return_date is null
+order by cd_name;
