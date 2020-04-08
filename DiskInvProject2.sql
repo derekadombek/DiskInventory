@@ -6,6 +6,7 @@
 -- Modified by:Derek Dombek
 -- Modification log: --3/5/2020- added inserts to the disk database
 					--3/12/2020- added joins
+					--4/8/2020- added stored procedures
 
 use master;
 go
@@ -347,3 +348,232 @@ from cd d join cd_borrower cdb
 	on cdb.borrower_id = b.borrower_id
 where return_date is null
 order by cd_name;
+
+
+
+
+go
+
+
+
+--project 5 stored procedures
+--2 artist procedures.
+
+drop procedure if exists sp_ins_artist;
+go
+create procedure sp_ins_artist
+	@artist_firt_name varchar(60), @artist_last_name varchar(60) = null, @artist_type_id int
+as
+	begin try
+		INSERT INTO [dbo].[artist]
+				   ([artist_firt_name]
+				   ,[artist_last_name]
+				   ,[artist_type_id])
+			 VALUES
+				   (@artist_firt_name
+				   ,@artist_last_name
+				   ,@artist_type_id)
+		end try
+		begin catch
+			print 'an error has occured.';
+			print 'message: ' + convert(varchar(200), error_message());
+		end catch
+GO
+grant execute on sp_ins_artist to diskUserdd;
+exec sp_ins_artist 'john prine', null, 1; 
+exec sp_ins_artist 'jimmy buffet', null, 11;
+go
+
+
+
+drop procedure if exists sp_upd_artist;
+go
+create procedure sp_upd_artist
+	@artist_id int, @artist_firt_name varchar(60), @artist_last_name varchar(60) = null, @artist_type_id int
+as
+
+begin try
+	UPDATE [dbo].[artist]
+	   SET [artist_firt_name] = @artist_firt_name
+		  ,[artist_last_name] =  @artist_last_name
+		  ,[artist_type_id] = @artist_type_id
+	 WHERE artist_id = @artist_id
+end try
+	begin catch
+		print 'an error has occured.';
+		print 'message: ' + convert(varchar(200), error_message());
+	end catch
+GO
+
+
+grant execute on sp_upd_artist to diskUserdd
+exec sp_upd_artist 22, 'john prine', 'updated', 2; 
+exec sp_upd_artist 23, 'jimmy buffet', null, 11;
+go
+
+
+drop procedure if exists sp_del_artist;
+go
+create procedure sp_del_artist
+	@artist_id int
+as
+
+begin try
+	delete from [dbo].[artist]
+		WHERE artist_id = @artist_id
+end try
+	begin catch
+		print 'an error has occured.';
+		print 'message: ' + convert(varchar(200), error_message());
+	end catch
+GO
+
+
+grant execute on sp_del_artist to diskUserdd
+exec sp_del_artist 22; 
+exec sp_del_artist 1;
+go
+
+
+--3 borrower procedures.
+drop procedure if exists sp_ins_borrower;
+go
+create procedure sp_ins_borrower
+	@borrower_firt_name varchar(60), @borrower_last_name varchar(60), @phone varchar(50)
+as
+	begin try
+		INSERT INTO [dbo].[borrower]
+				   ([borrower_firt_name]
+				   ,[borrower_last_name]
+				   ,[phone])
+			 VALUES
+				   (@borrower_firt_name
+				   ,@borrower_last_name
+				   ,@phone)
+		end try
+		begin catch
+			print 'an error has occured.';
+			print 'message: ' + convert(varchar(200), error_message());
+		end catch
+GO
+grant execute on sp_ins_borrower to diskUserdd;
+exec sp_ins_borrower'doogie', 'hoozer', '2081112222'; 
+exec sp_ins_borrower'doogie', null, '2081112222';
+go
+
+
+drop procedure if exists sp_upd_borrower;
+go
+create procedure sp_upd_borrower
+	@borrower_id int, @borrower_firt_name varchar(60), @borrower_last_name varchar(60), @phone varchar(50)
+as
+		begin try
+			UPDATE [dbo].[borrower]
+			   SET [borrower_firt_name] = @borrower_firt_name
+				  ,[borrower_last_name] = @borrower_last_name
+				  ,[phone] =  @phone
+			 WHERE borrower_id = @borrower_id
+		end try
+		begin catch
+			print 'an error has occured.';
+			print 'message: ' + convert(varchar(200), error_message());
+		end catch
+GO
+grant execute on sp_upd_borrower to diskUserdd;
+exec sp_upd_borrower 22, 'doogie', 'hoozer', '208-111-2222'; 
+exec sp_upd_borrower 21, 'doogie', null, '2081112222';
+go
+
+
+drop procedure if exists sp_del_borrower;
+go
+create procedure sp_del_borrower
+	@borrower_id int
+as
+		begin try
+			DELETE FROM [dbo].[borrower]
+				  WHERE borrower_id = @borrower_id
+		end try
+		begin catch
+			print 'an error has occured.';
+			print 'message: ' + convert(varchar(200), error_message());
+		end catch
+GO
+grant execute on sp_del_borrower to diskUserdd;
+exec sp_del_borrower 22; 
+exec sp_del_borrower 21;
+exec sp_del_borrower 2;
+go
+
+--4 cd procedures.
+drop procedure if exists sp_ins_cd;
+go
+create procedure sp_ins_cd
+	@cd_name varchar(60), @rel_date datetime, @genre_id int, @status_id int, @cd_type_id int
+as
+	begin try
+		INSERT INTO [dbo].[cd]
+				   ([cd_name]
+				   ,[rel_date]
+				   ,[genre_id]
+				   ,[status_id]
+				   ,[cd_type_id])
+			 VALUES
+				   (@cd_name
+				   ,@rel_date
+				   ,@genre_id
+				   ,@status_id
+				   ,@cd_type_id)
+	end try
+	begin catch
+		print 'an error has occured.';
+		print 'message: ' + convert(varchar(200), error_message());
+	end catch
+GO
+grant execute on sp_ins_cd to diskUserdd;
+exec sp_ins_cd 'thunder', '3/5/2020', 4,1,1; 
+exec sp_ins_cd 'doogie', '2/2/2002', null,1,1;
+go
+
+drop procedure if exists sp_upd_cd;
+go
+create procedure sp_upd_cd
+	@cd_id int, @cd_name varchar(60), @rel_date datetime, @genre_id int, @status_id int, @cd_type_id int
+as
+	begin try
+		UPDATE [dbo].[cd]
+		   SET [cd_name] = @cd_name
+			  ,[rel_date] = @rel_date
+			  ,[genre_id] = @genre_id
+			  ,[status_id] = @status_id
+			  ,[cd_type_id] =  @cd_type_id
+		 WHERE cd_id = @cd_id
+	end try
+	begin catch
+		print 'an error has occured.';
+		print 'message: ' + convert(varchar(200), error_message());
+	end catch
+GO
+grant execute on sp_upd_cd to diskUserdd;
+exec sp_upd_cd 22, 'thunder updated', '3/10/2020', 3,2,2; 
+exec sp_upd_cd 22, 'doogie', '2/2/2002', null,1,1;
+go
+
+drop procedure if exists sp_del_cd;
+go
+create procedure sp_del_cd
+	@cd_id int
+as
+	begin try
+		DELETE FROM [dbo].[cd]
+			  WHERE cd_id = @cd_id
+	end try
+	begin catch
+		print 'an error has occured.';
+		print 'message: ' + convert(varchar(200), error_message());
+	end catch
+GO
+grant execute on sp_del_cd to diskUserdd;
+exec sp_del_cd 22; 
+exec sp_del_cd 5;
+go
